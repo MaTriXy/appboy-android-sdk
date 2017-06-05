@@ -3,11 +3,11 @@ package com.appboy.ui.widget;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewStub;
 import android.view.ViewTreeObserver;
-import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -15,10 +15,20 @@ import android.widget.ViewSwitcher;
 
 import com.appboy.Appboy;
 import com.appboy.Constants;
+import com.appboy.configuration.AppboyConfigurationProvider;
+import com.appboy.enums.Channel;
 import com.appboy.models.cards.Card;
+import com.appboy.support.AppboyLogger;
+import com.appboy.ui.AppboyNavigator;
 import com.appboy.ui.R;
+import com.appboy.ui.actions.ActionFactory;
 import com.appboy.ui.actions.IAction;
-import com.appboy.ui.support.StringUtils;
+import com.appboy.ui.actions.UriAction;
+import com.appboy.ui.feed.AppboyFeedManager;
+import com.appboy.ui.feed.AppboyImageSwitcher;
+import com.appboy.ui.support.FrescoLibraryUtils;
+import com.appboy.ui.support.ViewUtils;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -30,20 +40,23 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
   private static final String TAG = String.format("%s.%s", Constants.APPBOY_LOG_TAG_PREFIX, BaseCardView.class.getName());
   private static Boolean unreadCardVisualIndicatorOn;
   private static final float SQUARE_ASPECT_RATIO = 1f;
-
   protected final Context mContext;
   protected T mCard;
-  protected ImageSwitcher mImageSwitcher;
+  protected AppboyImageSwitcher mImageSwitcher;
+  private final boolean mCanUseFresco;
 
   public BaseCardView(Context context) {
     super(context);
+    // Note: this must be called before we inflate any views.
+    mCanUseFresco = FrescoLibraryUtils.canUseFresco(context);
+
     mContext = context;
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     inflater.inflate(getLayoutResource(), this);
     // All implementing views of BaseCardView must include this switcher view in order to have the
     // read/unread functionality. Views that don't have the indicator (like banner views) won't have the image switcher
     // in them and thus we do the null-check below.
-    mImageSwitcher = (ImageSwitcher) findViewById(R.id.com_appboy_newsfeed_item_read_indicator_image_switcher);
+    mImageSwitcher = (AppboyImageSwitcher) findViewById(R.id.com_appboy_newsfeed_item_read_indicator_image_switcher);
     if (mImageSwitcher != null) {
       mImageSwitcher.setFactory(new ViewSwitcher.ViewFactory() {
         @Override
@@ -58,13 +71,8 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
 
     // Read the setting from the appboy.xml if we don't already have a value.
     if (unreadCardVisualIndicatorOn == null) {
-      int resId = mContext.getResources().getIdentifier("com_appboy_newsfeed_unread_visual_indicator_on", "bool", context.getPackageName());
-      if (resId != 0) {
-        unreadCardVisualIndicatorOn = context.getResources().getBoolean(resId);
-      } else {
-        // If the xml setting isn't present, default to true.
-        unreadCardVisualIndicatorOn = true;
-      }
+      AppboyConfigurationProvider configurationProvider = new AppboyConfigurationProvider(context);
+      unreadCardVisualIndicatorOn = configurationProvider.getIsNewsfeedVisualIndicatorOn();
     }
 
     // If the setting is false, then hide the indicator.
@@ -90,20 +98,26 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
   private void setCardViewedIndicator() {
     if (getCard() != null) {
       if (mImageSwitcher != null) {
-        int resourceId;
+        AppboyLogger.v(TAG, "Setting the read/unread indicator for the card.");
         if (getCard().isRead()) {
-          resourceId = R.drawable.icon_read;
+          if (mImageSwitcher.getReadIcon() != null) {
+            mImageSwitcher.setImageDrawable(mImageSwitcher.getReadIcon());
+          } else {
+            mImageSwitcher.setImageResource(R.drawable.icon_read);
+          }
+          mImageSwitcher.setTag("icon_read");
         } else {
-          resourceId = R.drawable.icon_unread;
+          if (mImageSwitcher.getUnReadIcon() != null) {
+            mImageSwitcher.setImageDrawable(mImageSwitcher.getUnReadIcon());
+            return;
+          } else {
+            mImageSwitcher.setImageResource(R.drawable.icon_unread);
+          }
+          mImageSwitcher.setTag("icon_unread");
         }
-        mImageSwitcher.setImageResource(resourceId);
-        // Used to identify the current Drawable in the imageSwitcher
-        mImageSwitcher.setTag(String.valueOf(resourceId));
-      } else {
-        Log.d(TAG, "The imageSwitcher for the read/unread feature is null. Did you include it in your xml?");
       }
     } else {
-      Log.d(TAG, "The card is null.");
+      AppboyLogger.d(TAG, "The card is null.");
     }
   }
 
@@ -124,11 +138,11 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
   }
 
   void setOptionalTextView(TextView view, String value) {
-    if (value != null && !value.trim().equals(StringUtils.EMPTY_STRING)) {
+    if (value != null && !value.trim().equals("")) {
       view.setText(value);
       view.setVisibility(VISIBLE);
     } else {
-      view.setText(StringUtils.EMPTY_STRING);
+      view.setText("");
       view.setVisibility(GONE);
     }
   }
@@ -158,7 +172,7 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
    * Calls setImageViewToUrl with respectAspectRatio set to true.
    * @see com.appboy.ui.widget.BaseCardView#setImageViewToUrl(android.widget.ImageView, String, float, boolean)
    */
-  void setImageViewToUrl(final ImageView imageView, final String imageUrl, final float aspectRatio){
+  void setImageViewToUrl(final ImageView imageView, final String imageUrl, final float aspectRatio) {
     setImageViewToUrl(imageView, imageUrl, aspectRatio, true);
   }
 
@@ -176,12 +190,12 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
    */
   void setImageViewToUrl(final ImageView imageView, final String imageUrl, final float aspectRatio, final boolean respectAspectRatio) {
     if (imageUrl == null) {
-      Log.w(TAG, "The image url to render is null. Not setting the card image.");
+      AppboyLogger.w(TAG, "The image url to render is null. Not setting the card image.");
       return;
     }
 
-    if (aspectRatio == 0){
-      Log.w(TAG, "The image aspect ratio is 0. Not setting the card image.");
+    if (aspectRatio == 0) {
+      AppboyLogger.w(TAG, "The image aspect ratio is 0. Not setting the card image.");
       return;
     }
 
@@ -199,7 +213,7 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
             public void onGlobalLayout() {
               int width = imageView.getWidth();
               imageView.setLayoutParams(new LayoutParams(width, (int) (width / aspectRatio)));
-              removeOnGlobalLayoutListenerSafe(imageView.getViewTreeObserver(), this);
+              ViewUtils.removeOnGlobalLayoutListenerSafe(imageView.getViewTreeObserver(), this);
             }
           });
         }
@@ -211,22 +225,77 @@ public abstract class BaseCardView<T extends Card> extends RelativeLayout implem
     }
   }
 
-  @TargetApi(16)
-  public static void removeOnGlobalLayoutListenerSafe(ViewTreeObserver viewTreeObserver,
-                                                ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener) {
-    if (android.os.Build.VERSION.SDK_INT < 16) {
-      viewTreeObserver.removeGlobalOnLayoutListener(onGlobalLayoutListener);
-    } else {
-      viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener);
+  /**
+   * Loads an image via url for display in a SimpleDraweeView using the Facebook Fresco library.
+   * By default, gif urls are set to autoplay and tap to retry is on for all images.
+   * @param simpleDraweeView the fresco SimpleDraweeView in which to display the image
+   * @param imageUrl the URL of the image resource
+   */
+  void setSimpleDraweeToUrl(final SimpleDraweeView simpleDraweeView, final String imageUrl, final float aspectRatio, final boolean respectAspectRatio) {
+    if (imageUrl == null) {
+      AppboyLogger.w(TAG, "The image url to render is null. Not setting the card image.");
+      return;
+    }
+
+    FrescoLibraryUtils.setDraweeControllerHelper(simpleDraweeView, imageUrl, aspectRatio, respectAspectRatio);
+  }
+
+  /**
+   * Returns whether we can use the Fresco Library for newsfeed cards.
+   */
+  boolean canUseFresco() {
+    return mCanUseFresco;
+  }
+
+  protected static void handleCardClick(Context context, Card card, IAction cardAction, String tag) {
+    handleCardClick(context, card, cardAction, tag, true);
+  }
+
+  /**
+   * All card views should handle new feed card clicks through this method
+   */
+  protected static void handleCardClick(Context context, Card card, IAction cardAction, String tag, boolean markAsRead) {
+    if (markAsRead) {
+      card.setIsRead(true);
+    }
+    if (cardAction != null) {
+      if (card.logClick()) {
+        AppboyLogger.d(tag, String.format("Logged click for card %s", card.getId()));
+      } else {
+        AppboyLogger.d(tag, String.format("Logging click failed for card %s", card.getId()));
+      }
+      if (!AppboyFeedManager.getInstance().getFeedCardClickActionListener().onFeedCardClicked(context, card, cardAction)) {
+        if (cardAction instanceof UriAction) {
+          AppboyNavigator.getAppboyNavigator().gotoUri(context, (UriAction) cardAction);
+        } else {
+          // Some other action received, execute directly.
+          cardAction.execute(context);
+        }
+      }
     }
   }
 
-  protected static void handleCardClick(Context context, Card card, IAction cardAction, String tag){
-    card.setIsRead(true);
-    if(cardAction != null){
-      Log.d(tag, String.format("Logged click for card %s", card.getId()));
-      card.logClick();
-      cardAction.execute(context);
+  protected static UriAction getUriActionForCard(Card card) {
+    Bundle extras = new Bundle();
+    for (String key : card.getExtras().keySet()) {
+      extras.putString(key, card.getExtras().get(key));
+    }
+    return ActionFactory.createUriActionFromUrlString(card.getUrl(), extras, card.getOpenUriInWebView(), Channel.NEWS_FEED);
+  }
+
+  /**
+   * Gets the view to display the correct card image after checking if it can use Fresco.
+   * @param stubLayoutId The resource Id of the stub for inflation as returned by findViewById.
+   * @return the view to display the image. This will either be an ImageView or DraweeView
+   */
+  View getProperViewFromInflatedStub(int stubLayoutId) {
+    ViewStub imageStub = (ViewStub) findViewById(stubLayoutId);
+    imageStub.inflate();
+
+    if (mCanUseFresco) {
+      return findViewById(R.id.com_appboy_stubbed_feed_drawee_view);
+    } else {
+      return findViewById(R.id.com_appboy_stubbed_feed_image_view);
     }
   }
 }

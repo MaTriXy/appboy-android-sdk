@@ -7,11 +7,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.appboy.Constants;
+import com.appboy.enums.Channel;
 import com.appboy.models.cards.CrossPromotionSmallCard;
+import com.appboy.support.StringUtils;
 import com.appboy.ui.R;
 import com.appboy.ui.actions.GooglePlayAppDetailsAction;
 import com.appboy.ui.actions.IAction;
-import com.appboy.ui.support.StringUtils;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -22,7 +24,8 @@ public class CrossPromotionSmallCardView extends BaseCardView<CrossPromotionSmal
   private final TextView mReviewCount;
   private final TextView mCaption;
   private final StarRatingView mStarRating;
-  private final ImageView mImage;
+  private ImageView mImage;
+  private SimpleDraweeView mDrawee;
   private final Button mPrice;
   private IAction mPriceAction;
   private final float mAspectRatio = 1f;
@@ -39,8 +42,15 @@ public class CrossPromotionSmallCardView extends BaseCardView<CrossPromotionSmal
     mReviewCount = (TextView) findViewById(R.id.com_appboy_cross_promotion_small_card_review_count);
     mCaption = (TextView) findViewById(R.id.com_appboy_cross_promotion_small_card_recommendation_tab);
     mStarRating = (StarRatingView) findViewById(R.id.com_appboy_cross_promotion_small_card_star_rating);
-    mImage = (ImageView) findViewById(R.id.com_appboy_cross_promotion_small_card_image);
     mPrice = (Button) findViewById(R.id.com_appboy_cross_promotion_small_card_price);
+
+    if (canUseFresco()) {
+      mDrawee = (SimpleDraweeView) getProperViewFromInflatedStub(R.id.com_appboy_cross_promotion_small_card_drawee_stub);
+    } else {
+      mImage = (ImageView) getProperViewFromInflatedStub(R.id.com_appboy_cross_promotion_small_card_imageview_stub);
+      mImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+      mImage.setAdjustViewBounds(true);
+    }
 
     if (card != null) {
       setCard(card);
@@ -72,19 +82,24 @@ public class CrossPromotionSmallCardView extends BaseCardView<CrossPromotionSmal
     // If the server sends down the display price, use that,
     if (!StringUtils.isNullOrBlank(card.getDisplayPrice())) {
       mPrice.setText(card.getDisplayPrice());
-    } else{
+    } else {
     // else, format client-side.
       mPrice.setText(getPriceString(card.getPrice()));
     }
-    mPriceAction = new GooglePlayAppDetailsAction(card.getPackage(), false,  card.getAppStore(), card.getKindleId());
+    mPriceAction = new GooglePlayAppDetailsAction(card.getPackage(), card.getOpenUriInWebView(), card.getAppStore(),
+        card.getKindleId(), Channel.NEWS_FEED);
     mPrice.setOnClickListener(new OnClickListener() {
       @Override
-      public void onClick(View v) {
-        handleCardClick(mContext,card, mPriceAction, TAG);
+      public void onClick(View view) {
+        handleCardClick(mContext, card, mPriceAction, TAG);
       }
     });
 
-    setImageViewToUrl(mImage, card.getImageUrl(), mAspectRatio);
+    if (canUseFresco()) {
+      setSimpleDraweeToUrl(mDrawee, card.getImageUrl(), mAspectRatio, true);
+    } else {
+      setImageViewToUrl(mImage, card.getImageUrl(), mAspectRatio);
+    }
   }
 
   private String getPriceString(double price) {

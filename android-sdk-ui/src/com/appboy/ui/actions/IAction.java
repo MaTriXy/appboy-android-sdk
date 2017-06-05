@@ -2,6 +2,11 @@ package com.appboy.ui.actions;
 
 import android.content.Context;
 
+import com.appboy.enums.Channel;
+
 public interface IAction {
-  public void execute(Context context);
+
+  void execute(Context context);
+
+  Channel getChannel();
 }

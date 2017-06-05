@@ -1,19 +1,19 @@
 package com.appboy.ui.widget;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import com.appboy.Appboy;
+
 import com.appboy.Constants;
 import com.appboy.models.cards.BannerImageCard;
 import com.appboy.ui.R;
-import com.appboy.ui.actions.ActionFactory;
 import com.appboy.ui.actions.IAction;
+import com.facebook.drawee.view.SimpleDraweeView;
 
-public class BannerImageCardView  extends BaseCardView<BannerImageCard> {
-  private final ImageView mImage;
+public class BannerImageCardView extends BaseCardView<BannerImageCard> {
+  private ImageView mImage;
   private IAction mCardAction;
+  private SimpleDraweeView mDrawee;
   private static final String TAG = String.format("%s.%s", Constants.APPBOY, BannerImageCardView.class.getName());
 
   // We set this card's aspect ratio here as a first guess. If the server doesn't send down an
@@ -26,7 +26,13 @@ public class BannerImageCardView  extends BaseCardView<BannerImageCard> {
 
   public BannerImageCardView(final Context context, BannerImageCard card) {
     super(context);
-    mImage = (ImageView) findViewById(R.id.com_appboy_banner_image_card_image);
+    if (canUseFresco()) {
+      mDrawee = (SimpleDraweeView) getProperViewFromInflatedStub(R.id.com_appboy_banner_image_card_drawee_stub);
+    } else {
+      mImage = (ImageView) getProperViewFromInflatedStub(R.id.com_appboy_banner_image_card_imageview_stub);
+      mImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+      mImage.setAdjustViewBounds(true);
+    }
 
     if (card != null) {
       setCard(card);
@@ -43,24 +49,26 @@ public class BannerImageCardView  extends BaseCardView<BannerImageCard> {
   @Override
   public void onSetCard(final BannerImageCard card) {
     boolean respectAspectRatio = false;
-    if (card.getAspectRatio() != 0f){
+    if (card.getAspectRatio() != 0f) {
       mAspectRatio = card.getAspectRatio();
       respectAspectRatio = true;
     }
-    setImageViewToUrl(mImage, card.getImageUrl(), mAspectRatio, respectAspectRatio);
-    mCardAction = ActionFactory.createUriAction(getContext(), card.getUrl());
+
+    if (canUseFresco()) {
+      setSimpleDraweeToUrl(mDrawee, card.getImageUrl(), mAspectRatio, respectAspectRatio);
+    } else {
+      setImageViewToUrl(mImage, card.getImageUrl(), mAspectRatio, respectAspectRatio);
+    }
+
+    mCardAction = getUriActionForCard(card);
 
     setOnClickListener(new OnClickListener() {
       @Override
-      public void onClick(View v) {
+      public void onClick(View view) {
         // We don't set isRead here (like we do in other card views)
-        // because Banner Cards don't have read/unread indicators.  They are all images, so there's
+        // because Banner Cards don't have read/unread indicators. They are all images, so there's
         // no free space to put the indicator.
-        if (mCardAction != null) {
-          Log.d(TAG, String.format("Logged click for card %s", card.getId()));
-          card.logClick();
-          mCardAction.execute(mContext);
-        }
+        handleCardClick(mContext,card, mCardAction, TAG, false);
       }
     });
   }

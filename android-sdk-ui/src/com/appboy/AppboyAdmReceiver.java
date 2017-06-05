@@ -1,14 +1,17 @@
 package com.appboy;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
-import android.content.Context;
-import android.app.Notification;
-import android.app.NotificationManager;
-import com.appboy.configuration.XmlAppConfigurationProvider;
+
+import com.appboy.configuration.AppboyConfigurationProvider;
+import com.appboy.push.AppboyNotificationActionUtils;
+import com.appboy.push.AppboyNotificationUtils;
+import com.appboy.support.AppboyLogger;
 
 public final class AppboyAdmReceiver extends BroadcastReceiver {
   private static final String TAG = String.format("%s.%s", Constants.APPBOY_LOG_TAG_PREFIX, AppboyAdmReceiver.class.getName());
@@ -24,20 +27,20 @@ public final class AppboyAdmReceiver extends BroadcastReceiver {
 
   @Override
   public void onReceive(Context context, Intent intent) {
-    Log.i(TAG, String.format("Received broadcast message. Message: %s", intent.toString()));
+    AppboyLogger.i(TAG, String.format("Received broadcast message. Message: %s", intent.toString()));
     String action = intent.getAction();
     if (ADM_REGISTRATION_INTENT_ACTION.equals(action)) {
-      Log.i(TAG, String.format("Received ADM REGISTRATION. Message: %s", intent.toString()));
-      XmlAppConfigurationProvider appConfigurationProvider = new XmlAppConfigurationProvider(context);
-      handleRegistrationEventIfEnabled(appConfigurationProvider, context, intent);
-    } else if (ADM_RECEIVE_INTENT_ACTION.equals(action) && AppboyNotificationUtils.isAppboyPushMessage(intent)) {
-      new HandleAppboyAdmMessageTask(context, intent);
-    } else if (Constants.APPBOY_CANCEL_NOTIFICATION_ACTION.equals(action) && intent.hasExtra(Constants.APPBOY_CANCEL_NOTIFICATION_TAG)) {
-      int notificationId = intent.getIntExtra(Constants.APPBOY_CANCEL_NOTIFICATION_TAG, Constants.APPBOY_DEFAULT_NOTIFICATION_ID);
-      NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-      notificationManager.cancel(Constants.APPBOY_PUSH_NOTIFICATION_TAG, notificationId);
+      handleRegistrationEventIfEnabled(new AppboyConfigurationProvider(context), context, intent);
+    } else if (ADM_RECEIVE_INTENT_ACTION.equals(action)) {
+      handleAppboyAdmReceiveIntent(context, intent);
+    } else if (Constants.APPBOY_CANCEL_NOTIFICATION_ACTION.equals(action)) {
+      AppboyNotificationUtils.handleCancelNotificationAction(context, intent);
+    } else if (Constants.APPBOY_ACTION_CLICKED_ACTION.equals(action)) {
+      AppboyNotificationActionUtils.handleNotificationActionClicked(context, intent);
+    } else if (Constants.APPBOY_PUSH_CLICKED_ACTION.equals(action)) {
+      AppboyNotificationUtils.handleNotificationOpened(context, intent);
     } else {
-      Log.w(TAG, String.format("The ADM receiver received a message not sent from Appboy. Ignoring the message."));
+      AppboyLogger.w(TAG, "The ADM receiver received a message not sent from Appboy. Ignoring the message.");
     }
   }
 
@@ -50,17 +53,18 @@ public final class AppboyAdmReceiver extends BroadcastReceiver {
   boolean handleRegistrationIntent(Context context, Intent intent) {
     String error = intent.getStringExtra(ADM_ERROR_KEY);
     String registrationId = intent.getStringExtra(ADM_REGISTRATION_ID_KEY);
+    String unregistered = intent.getStringExtra(ADM_UNREGISTERED_KEY);
 
     if (error != null) {
-      Log.e(TAG, error);
+      AppboyLogger.e(TAG, "Error during ADM registration: " + error);
     } else if (registrationId != null) {
-      android.util.Log.i(TAG, "Registering for Adm messages with registrationId: " + registrationId);
+      AppboyLogger.i(TAG, "Registering for ADM messages with registrationId: " + registrationId);
       Appboy.getInstance(context).registerAppboyPushMessages(registrationId);
-    } else if (intent.hasExtra(ADM_UNREGISTERED_KEY)) {
-      Appboy.getInstance(context).unregisterAppboyPushMessages();
+    } else if (unregistered != null) {
+      AppboyLogger.w(TAG, "The device was un-registered from ADM: " + unregistered);
     } else {
-      Log.w(TAG, "The ADM registration message is missing error information, registration id, and unregistration " +
-          "confirmation. Ignoring.");
+      AppboyLogger.w(TAG, "The ADM registration intent is missing error information, registration id, and unregistration "
+          + "confirmation. Ignoring.");
       return false;
     }
     return true;
@@ -78,40 +82,48 @@ public final class AppboyAdmReceiver extends BroadcastReceiver {
     if (ADM_DELETED_MESSAGES_KEY.equals(messageType)) {
       int totalDeleted = intent.getIntExtra(ADM_NUMBER_OF_MESSAGES_DELETED_KEY, -1);
       if (totalDeleted == -1) {
-        Log.e(TAG, String.format("Unable to parse ADM message. Intent: %s", intent.toString()));
+        AppboyLogger.e(TAG, String.format("Unable to parse ADM message. Intent: %s", intent.toString()));
       } else {
-        Log.i(TAG, String.format("ADM deleted %d messages. Fetch them from Appboy.", totalDeleted));
+        AppboyLogger.i(TAG, String.format("ADM deleted %d messages. Fetch them from Appboy.", totalDeleted));
       }
       return false;
     } else {
-      Bundle extras = intent.getExtras();
+      Bundle admExtras = intent.getExtras();
+      AppboyLogger.d(TAG, String.format("Push message payload received: %s", admExtras));
 
       // Parsing the Appboy data extras (data push).
-      Bundle appboyExtrasData = AppboyNotificationUtils.createExtrasBundle(AppboyNotificationUtils.bundleOptString(extras, Constants.APPBOY_PUSH_EXTRAS_KEY, "{}"));
-      extras.remove(Constants.APPBOY_PUSH_EXTRAS_KEY);
-      extras.putBundle(Constants.APPBOY_PUSH_EXTRAS_KEY, appboyExtrasData);
+      Bundle appboyExtras = AppboyNotificationUtils.getAppboyExtrasWithoutPreprocessing(admExtras);
+      admExtras.putBundle(Constants.APPBOY_PUSH_EXTRAS_KEY, appboyExtras);
 
       if (AppboyNotificationUtils.isNotificationMessage(intent)) {
-        int notificationId = AppboyNotificationUtils.getNotificationId(extras);
-        extras.putInt(Constants.APPBOY_PUSH_NOTIFICATION_ID, notificationId);
-        XmlAppConfigurationProvider appConfigurationProvider = new XmlAppConfigurationProvider(context);
-        Notification notification = AppboyNotificationUtils.createNotification(appConfigurationProvider, context,
-            extras.getString(Constants.APPBOY_PUSH_TITLE_KEY), extras.getString(Constants.APPBOY_PUSH_CONTENT_KEY), extras);
+        int notificationId = AppboyNotificationUtils.getNotificationId(admExtras);
+        admExtras.putInt(Constants.APPBOY_PUSH_NOTIFICATION_ID, notificationId);
+        AppboyConfigurationProvider appConfigurationProvider = new AppboyConfigurationProvider(context);
+
+        IAppboyNotificationFactory appboyNotificationFactory = AppboyNotificationUtils.getActiveNotificationFactory();
+        Notification notification = appboyNotificationFactory.createNotification(appConfigurationProvider, context, admExtras, appboyExtras);
+
+        if (notification == null) {
+          AppboyLogger.d(TAG, "Notification created by notification factory was null. Not displaying notification.");
+          return false;
+        }
+
         notificationManager.notify(Constants.APPBOY_PUSH_NOTIFICATION_TAG, notificationId, notification);
-        AppboyNotificationUtils.sendPushMessageReceivedBroadcast(context, extras);
+        AppboyNotificationUtils.sendPushMessageReceivedBroadcast(context, admExtras);
 
         // Since we have received a notification, we want to wake the device screen.
-        AppboyNotificationUtils.wakeScreenIfHasPermission(context, extras);
+        AppboyNotificationUtils.wakeScreenIfHasPermission(context, admExtras);
 
         // Set a custom duration for this notification.
-        if (extras.containsKey(Constants.APPBOY_PUSH_NOTIFICATION_DURATION_KEY)) {
-          int durationInMillis = Integer.parseInt(extras.getString(Constants.APPBOY_PUSH_NOTIFICATION_DURATION_KEY));
+        if (admExtras.containsKey(Constants.APPBOY_PUSH_NOTIFICATION_DURATION_KEY)) {
+          int durationInMillis = Integer.parseInt(admExtras.getString(Constants.APPBOY_PUSH_NOTIFICATION_DURATION_KEY));
           AppboyNotificationUtils.setNotificationDurationAlarm(context, this.getClass(), notificationId, durationInMillis);
         }
 
         return true;
       } else {
-        AppboyNotificationUtils.sendPushMessageReceivedBroadcast(context, extras);
+        AppboyNotificationUtils.sendPushMessageReceivedBroadcast(context, admExtras);
+        AppboyNotificationUtils.requestGeofenceRefreshIfAppropriate(context, admExtras);
         return false;
       }
     }
@@ -122,30 +134,43 @@ public final class AppboyAdmReceiver extends BroadcastReceiver {
    * notification, which cannot be downloaded on the main thread.
    */
   public class HandleAppboyAdmMessageTask extends AsyncTask<Void, Void, Void> {
-    private final Context context;
-    private final Intent intent;
+    private final Context mContext;
+    private final Intent mIntent;
 
     public HandleAppboyAdmMessageTask(Context context, Intent intent) {
-      this.context = context;
-      this.intent = intent;
-      this.execute();
+      mContext = context;
+      mIntent = intent;
+      execute();
     }
 
     @Override
     protected Void doInBackground(Void... voids) {
-      handleAppboyAdmMessage(this.context, this.intent);
+      try {
+        handleAppboyAdmMessage(mContext, mIntent);
+      } catch (Exception e) {
+        AppboyLogger.e(TAG, "Failed to create and display notification.", e);
+      }
       return null;
     }
   }
 
-  boolean handleRegistrationEventIfEnabled(XmlAppConfigurationProvider appConfigurationProvider,
-                                           Context context, Intent intent) {
+  void handleAppboyAdmReceiveIntent(Context context, Intent intent) {
+    if (AppboyNotificationUtils.isAppboyPushMessage(intent)) {
+      new HandleAppboyAdmMessageTask(context, intent);
+    }
+  }
+
+  boolean handleRegistrationEventIfEnabled(AppboyConfigurationProvider appConfigurationProvider, Context context, Intent intent) {
+    AppboyLogger.i(TAG, String.format("Received ADM registration. Message: %s", intent.toString()));
     // Only handle ADM registration events if ADM registration handling is turned on in the
     // configuration file.
     if (appConfigurationProvider.isAdmMessagingRegistrationEnabled()) {
+      AppboyLogger.d(TAG, "ADM enabled in appboy.xml. Continuing to process ADM registration intent.");
       handleRegistrationIntent(context, intent);
       return true;
     }
+    AppboyLogger.w(TAG, "ADM not enabled in appboy.xml. Ignoring ADM registration intent. Note: you must set "
+        + "com_appboy_push_adm_messaging_registration_enabled to true in your appboy.xml to enable ADM.");
     return false;
   }
 }

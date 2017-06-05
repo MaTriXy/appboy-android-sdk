@@ -8,11 +8,12 @@ import android.widget.TextView;
 import com.appboy.Constants;
 import com.appboy.models.cards.ShortNewsCard;
 import com.appboy.ui.R;
-import com.appboy.ui.actions.ActionFactory;
 import com.appboy.ui.actions.IAction;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 public class ShortNewsCardView extends BaseCardView<ShortNewsCard> {
-  private final ImageView mImage;
+  private ImageView mImage;
+  private SimpleDraweeView mDrawee;
   private final TextView mTitle;
   private final TextView mDescription;
   private final TextView mDomain;
@@ -28,9 +29,16 @@ public class ShortNewsCardView extends BaseCardView<ShortNewsCard> {
   public ShortNewsCardView(final Context context, ShortNewsCard card) {
     super(context);
     mDescription = (TextView) findViewById(R.id.com_appboy_short_news_card_description);
-    mImage = (ImageView) findViewById(R.id.com_appboy_short_news_card_image);
     mTitle = (TextView) findViewById(R.id.com_appboy_short_news_card_title);
     mDomain = (TextView) findViewById(R.id.com_appboy_short_news_card_domain);
+
+    if (canUseFresco()) {
+      mDrawee = (SimpleDraweeView) getProperViewFromInflatedStub(R.id.com_appboy_short_news_card_drawee_stub);
+    } else {
+      mImage = (ImageView) getProperViewFromInflatedStub(R.id.com_appboy_short_news_card_imageview_stub);
+      mImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+      mImage.setAdjustViewBounds(true);
+    }
 
     if (card != null) {
       setCard(card);
@@ -49,15 +57,19 @@ public class ShortNewsCardView extends BaseCardView<ShortNewsCard> {
     mDescription.setText(card.getDescription());
     setOptionalTextView(mTitle, card.getTitle());
     setOptionalTextView(mDomain, card.getDomain());
-    mCardAction = ActionFactory.createUriAction(getContext(), card.getUrl());
+    mCardAction = getUriActionForCard(card);
 
     setOnClickListener(new OnClickListener() {
       @Override
-      public void onClick(View v) {
+      public void onClick(View view) {
         handleCardClick(mContext, card, mCardAction, TAG);
       }
     });
 
-    setImageViewToUrl(mImage, card.getImageUrl(), mAspectRatio);
+    if (canUseFresco()) {
+      setSimpleDraweeToUrl(mDrawee, card.getImageUrl(), mAspectRatio, true);
+    } else {
+      setImageViewToUrl(mImage, card.getImageUrl(), mAspectRatio);
+    }
   }
 }

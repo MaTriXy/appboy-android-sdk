@@ -1,35 +1,29 @@
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 apply plugin: 'findbugs'
 
 dependencies {
   compile project(':android-sdk-ui')
-  // Note: This will be removed in a future release.
-  compile files('libs/crittercism-3.0.8.jar')
   // Note: This requires the Android Support Repository to be installed, please see the README.md
-  compile 'com.android.support:support-v4:19.1.0'
+  compile "com.android.support:support-v4:${SUPPORT_LIBS_VERSION}"
+  compile "com.android.support:appcompat-v7:${SUPPORT_LIBS_VERSION}"
+  compile "com.android.support:design:${SUPPORT_LIBS_VERSION}"
+  compile "com.google.android.gms:play-services-ads:${PLAY_SERVICES_VERSION}"
+  compile "com.google.android.gms:play-services-location:${PLAY_SERVICES_VERSION}"
+  compile "com.google.android.gms:play-services-maps:${PLAY_SERVICES_VERSION}"
+  compile "com.facebook.fresco:fresco:${FACEBOOK_FRESCO_VERSION}"
+  compile "io.branch.sdk.android:library:${BRANCH_VERSION}"
 }
 
 android {
-  compileSdkVersion 19
-  buildToolsVersion '19.1.0'
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.buildToolsVersion
 
   defaultConfig {
-    minSdkVersion 8
-    targetSdkVersion 19
-  }
-
-  sourceSets {
-    main.setRoot(".")
-    // Note: We'll be moving this project to the new Android Build System conventional folder structure in a future
-    // release.
-    main {
-      manifest.srcFile 'AndroidManifest.xml'
-      java.srcDirs = ['src']
-      resources.srcDirs = ['src']
-      aidl.srcDirs = ['src']
-      renderscript.srcDirs = ['src']
-      res.srcDirs = ['res']
-      assets.srcDirs = ['assets']
-    }
+    minSdkVersion rootProject.ext.minSdkVersion
+    targetSdkVersion rootProject.ext.targetSdkVersion
+    applicationId "com.appboy.sample"
+    versionName rootProject.ext.appVersionName
+    versionCode 66
+    resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
   }
 }

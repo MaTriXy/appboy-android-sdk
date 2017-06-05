@@ -1,9 +1,12 @@
 package com.appboy.ui.support;
 
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
+import android.os.Bundle;
 
 import com.appboy.Constants;
+import com.appboy.support.AppboyLogger;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,9 +21,10 @@ public class UriUtils {
    * Note: A Uri such as tel:+1-555-555-5555 is not hierarchical and does not accept a query
    * string, so an empty Map will be returned.
    */
+  @SuppressWarnings("checkstyle:rightcurly")
   public static Map<String, String> getQueryParameters(Uri uri) {
     if (uri.isOpaque()) {
-      Log.d(TAG, "URI is not hierarchical. There are no query parameters to parse.");
+      AppboyLogger.d(TAG, "URI is not hierarchical. There are no query parameters to parse.");
       return Collections.emptyMap();
     }
 
@@ -50,5 +54,15 @@ public class UriUtils {
       start = end + 1;
     } while (start < query.length());
     return Collections.unmodifiableMap(parameters);
+  }
+
+  public static Intent getMainActivityIntent(Context context, Bundle extras) {
+    // get main activity intent.
+    Intent startActivityIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+    startActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    if (extras != null) {
+      startActivityIntent.putExtras(extras);
+    }
+    return startActivityIntent;
   }
 }

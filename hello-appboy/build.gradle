@@ -1,15 +1,24 @@
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 dependencies {
-  compile 'com.appboy:android-sdk-ui:1.6.+'
+  compile 'com.appboy:android-sdk-ui:2.0.+'
 }
 
 android {
-  compileSdkVersion 21
-  buildToolsVersion '21.0.0'
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.buildToolsVersion
 
   defaultConfig {
-    minSdkVersion 8
-    targetSdkVersion 21
+    minSdkVersion rootProject.ext.minSdkVersionForLifecycleListener
+    targetSdkVersion rootProject.ext.targetSdkVersion
+    versionName rootProject.ext.appVersionName
+  }
+
+  buildTypes {
+    debug {
+    }
+    release {
+      minifyEnabled true
+    }
   }
 }

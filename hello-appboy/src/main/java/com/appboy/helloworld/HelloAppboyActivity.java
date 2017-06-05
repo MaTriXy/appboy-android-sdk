@@ -8,10 +8,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import com.appboy.Appboy;
 
 public class HelloAppboyActivity extends Activity {
-  private EditText mNickname, mHighScore, mEmail;
+  private EditText mNickname;
+  private EditText mHighScore;
+  private EditText mEmail;
   private Context mApplicationContext;
 
   // These events will be shown in the Appboy dashboard.
@@ -23,7 +26,7 @@ public class HelloAppboyActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.hello_appboy);
 
-    // It is good practice to always get an instance of the appboy singleton using the application
+    // It is good practice to always get an instance of the Appboy singleton using the application
     // context.
     mApplicationContext = this.getApplicationContext();
 
@@ -50,8 +53,8 @@ public class HelloAppboyActivity extends Activity {
 
           // Log the custom attribute of "nickname : highScore"
           String attributeString = String.format("%s : %s", nickname, highScore);
-          Appboy.getInstance(mApplicationContext).getCurrentUser().
-            setCustomUserAttribute(HELLO_APPBOY_HIGH_SCORE_ATTRIBUTE_KEY, attributeString);
+          Appboy.getInstance(mApplicationContext).getCurrentUser()
+              .setCustomUserAttribute(HELLO_APPBOY_HIGH_SCORE_ATTRIBUTE_KEY, attributeString);
 
           displayToast("Sent off event and attribute to Appboy!");
         }
@@ -76,18 +79,5 @@ public class HelloAppboyActivity extends Activity {
       displayToast("Fields cannot be empty");
     }
     return false;
-  }
-
-  @Override
-  protected void onStart() {
-    super.onStart();
-    // When opening and closing a session, use the current activity
-    Appboy.getInstance(mApplicationContext).openSession(this);
-  }
-
-  @Override
-  protected void onStop() {
-    super.onStop();
-    Appboy.getInstance(mApplicationContext).closeSession(this);
   }
 }

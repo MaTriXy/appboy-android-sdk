@@ -2,11 +2,12 @@ package com.appboy.ui.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
 import com.appboy.Constants;
+import com.appboy.support.AppboyLogger;
 import com.appboy.ui.R;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class StarRatingView extends LinearLayout {
 
   public boolean setRating(float rating) {
     if (rating < 0 || rating > MAX_NUMBER_OF_STARS) {
-      Log.e(TAG, String.format("Unable to set rating to %f. Rating must be between 0 and %d", rating, MAX_NUMBER_OF_STARS));
+      AppboyLogger.e(TAG, String.format("Unable to set rating to %f. Rating must be between 0 and %d", rating, MAX_NUMBER_OF_STARS));
       return false;
     }
 
