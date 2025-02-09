@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- General configuration -->
+  <!-- The API key is not shown to the user and thus we don't require that it be translated. -->
+  <string translatable="false" name="com_braze_api_key">braze-sample-android</string>
+
+  <!-- On GPRS and EDGE, allow a flush request up to every 30 seconds. (default is 60)  -->
+  <integer name="com_braze_data_flush_interval_bad_network">30</integer>
+  <!-- With a 3G connection, allow a flush request up to every 15 seconds. (default is 30) -->
+  <integer name="com_braze_data_flush_interval_good_network">15</integer>
+  <!-- If we're on 4G or Wifi, allow a flush request up to every 10 seconds. (default is 10) -->
+  <integer name="com_braze_data_flush_interval_great_network">10</integer>
+
+  <!-- The length of time before a session times out in seconds. The session manager will "re-open"
+  otherwise closed sessions if the call to StartSession comes within this interval. (default is 10) -->
+  <integer name="com_braze_session_timeout">10</integer>
+
+  <!-- Push Notification configuration -->
+  <bool name="com_braze_firebase_cloud_messaging_registration_enabled">true</bool>
+  <string translatable="false" name="com_braze_firebase_cloud_messaging_sender_id">901477453852</string>
+  <bool name="com_braze_push_adm_messaging_registration_enabled">true</bool>
+
+  <!-- This integer sets the default accent color for push notifications on Android Lollipop and higher. If not specified,
+    the default background color is gray (the same gray Lollipop uses for system notifications). This value can
+    be overridden at runtime by a push notification that sets a custom accent color. -->
+  <integer name="com_braze_default_notification_accent_color">0xFF000000</integer>
+
+  <!-- A color resource id can also be set for the accent color as demonstrated below -->
+  <!--  <color name="com_braze_default_notification_accent_color">@color/my_color_here</color>-->
+
+  <drawable name="com_braze_push_small_notification_icon">@drawable/notification_small_icon</drawable>
+  <drawable name="com_braze_push_large_notification_icon">@drawable/notification_large_icon</drawable>
+
+  <!-- News Feed configuration -->
+  <!-- This boolean sets whether the read/unread visual indicator at the top right of news feed cards
+    on or off. -->
+  <bool name="com_braze_newsfeed_unread_visual_indicator_on">true</bool>
+
+  <!-- Location configuration -->
+  <!-- This boolean sets whether Braze should automatically collect location (if the user permits).
+    If set to true, location data will be collected once at the start of each session.
+    If not specified or set to false, all location collection will be disabled and location will
+    never be set for the user unless integrating apps manually call setLastKnownLocation on the
+    BrazeUser. -->
+  <bool name="com_braze_enable_location_collection">true</bool>
+
+  <!-- Triggered Action configuration -->
+  <!-- The minimum interval in seconds between actions, such as an in-app message, that can be triggered
+    by an in-app event, such as the logging of a custom event. This is a general rate limit for
+    actions to prevent overloading a user with messages. Defaults to 30s. The minimum valid value is 0s. -->
+  <integer name="com_braze_trigger_action_minimum_time_interval_seconds">5</integer>
+
+  <!--Handle Deep Links Automatically-->
+  <bool name="com_braze_handle_push_deep_links_automatically">true</bool>
+
+  <bool name="com_braze_push_notification_html_rendering_enabled">true</bool>
+
+  <string-array name="com_braze_internal_sdk_metadata">
+   <item>GRADLE</item>
+  </string-array>
+
+  <string-array name="com_braze_sdk_metadata">
+   <item>UNITY_PACKAGE_MANAGER</item>
+  </string-array>
+</resources>

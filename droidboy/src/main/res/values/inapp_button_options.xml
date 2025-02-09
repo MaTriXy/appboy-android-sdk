@@ -4,16 +4,20 @@
     <item>Message Buttons: Not Set</item>
     <item>Message Buttons: None</item>
     <item>Message Buttons: One - News Feed</item>
+    <item>Message Buttons: One - Long Title</item>
     <item>Message Buttons: Two - Web</item>
     <item>Message Buttons: Two - Deep Links</item>
     <item>Message Buttons: Two - Long Titles</item>
+    <item>Message Buttons: One - Show Push Prompt</item>
   </string-array>
   <string-array name="inapp_button_values">
     <item>@string/not_set</item>
     <item>@string/none</item>
     <item>one</item>
+    <item>one_long</item>
     <item>two</item>
     <item>deeplink</item>
     <item>long</item>
+    <item>push_prompt_one</item>
   </string-array>
 </resources>

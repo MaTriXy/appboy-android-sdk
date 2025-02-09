@@ -1,14 +1,19 @@
 package com.appboy.sample.logging;
 
-import android.content.Context;
-import android.util.AttributeSet;
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
-import com.appboy.Appboy;
-import com.appboy.models.outgoing.AppboyProperties;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.appboy.sample.R;
 import com.appboy.sample.util.ButtonUtils;
-import com.appboy.support.StringUtils;
+import com.braze.Braze;
+import com.braze.models.outgoing.BrazeProperties;
+import com.braze.support.StringUtils;
 
 import java.math.BigDecimal;
 
@@ -19,26 +24,22 @@ public class CustomPurchaseDialog extends CustomLogger {
   private EditText mCustomPurchaseCurrencyCodeName;
   private EditText mCustomPurchasePrice;
 
-  public CustomPurchaseDialog(Context context, AttributeSet attributeSet) {
-    super(context, attributeSet, R.layout.custom_purchase);
-  }
-
+  @Nullable
   @Override
-  protected View onCreateDialogView() {
-    View view = super.onCreateDialogView();
-    mCustomPurchaseQuantity = (EditText) view.findViewById(R.id.purchase_qty);
-    mCustomPurchaseCurrencyCodeName = (EditText) view.findViewById(R.id.custom_purchase_currency_code);
-    mCustomPurchasePrice = (EditText) view.findViewById(R.id.custom_purchase_price_code);
+  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    final View view = inflater.inflate(R.layout.custom_purchase, container, false);
+    mCustomPurchaseQuantity = view.findViewById(R.id.purchase_qty);
+    mCustomPurchaseCurrencyCodeName = view.findViewById(R.id.custom_purchase_currency_code);
+    mCustomPurchasePrice = view.findViewById(R.id.custom_purchase_price_code);
 
     ButtonUtils.setUpPopulateButton(view, R.id.purchase_qty_button, mCustomPurchaseQuantity, "5");
     ButtonUtils.setUpPopulateButton(view, R.id.custom_purchase_currency_code_button, mCustomPurchaseCurrencyCodeName, "JPY");
     ButtonUtils.setUpPopulateButton(view, R.id.custom_purchase_price_button, mCustomPurchasePrice, "5.0");
-
     return view;
   }
 
   @Override
-  protected boolean customLog(String name, AppboyProperties properties) {
+  protected void customLog(String name, BrazeProperties properties) {
     String currencyCode = mCustomPurchaseCurrencyCodeName.getText().toString();
     String quantity = mCustomPurchaseQuantity.getText().toString();
     String price = mCustomPurchasePrice.getText().toString();
@@ -50,8 +51,9 @@ public class CustomPurchaseDialog extends CustomLogger {
       price = DEFAULT_PRICE;
     }
     if (StringUtils.isNullOrBlank(quantity)) {
-      return Appboy.getInstance(getContext()).logPurchase(name, currencyCode, new BigDecimal(price), properties);
+      Braze.getInstance(getContext()).logPurchase(name, currencyCode, new BigDecimal(price), properties);
+      return;
     }
-    return Appboy.getInstance(getContext()).logPurchase(name, currencyCode, new BigDecimal(price), Integer.parseInt(quantity), properties);
+    Braze.getInstance(getContext()).logPurchase(name, currencyCode, new BigDecimal(price), Integer.parseInt(quantity), properties);
   }
 }

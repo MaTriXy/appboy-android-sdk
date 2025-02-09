@@ -1,13 +1,14 @@
 package com.appboy.sample;
 
 import android.app.Activity;
+import android.view.View;
 import android.widget.Toast;
 
-import com.appboy.models.IInAppMessage;
-import com.appboy.models.MessageButton;
-import com.appboy.ui.inappmessage.InAppMessageCloser;
-import com.appboy.ui.inappmessage.InAppMessageOperation;
-import com.appboy.ui.inappmessage.listeners.IInAppMessageManagerListener;
+import com.braze.models.inappmessage.IInAppMessage;
+import com.braze.models.inappmessage.MessageButton;
+import com.braze.ui.inappmessage.InAppMessageCloser;
+import com.braze.ui.inappmessage.InAppMessageOperation;
+import com.braze.ui.inappmessage.listeners.IInAppMessageManagerListener;
 
 import java.util.Map;
 
@@ -18,25 +19,11 @@ public class CustomInAppMessageManagerListener implements IInAppMessageManagerLi
     mActivity = activity;
   }
 
-  /**
-   * see {@link IInAppMessageManagerListener#onInAppMessageReceived(IInAppMessage)}
-   */
-  @Override
-  public boolean onInAppMessageReceived(IInAppMessage inAppMessage) {
-    return false;
-  }
-
-  /**
-   * see {@link IInAppMessageManagerListener#beforeInAppMessageDisplayed(IInAppMessage)}
-   */
   @Override
   public InAppMessageOperation beforeInAppMessageDisplayed(IInAppMessage inAppMessage) {
     return InAppMessageOperation.DISPLAY_NOW;
   }
 
-  /**
-   * see {@link IInAppMessageManagerListener#onInAppMessageClicked(IInAppMessage, InAppMessageCloser)}
-   */
   @Override
   public boolean onInAppMessageClicked(IInAppMessage inAppMessage, InAppMessageCloser inAppMessageCloser) {
     Toast.makeText(mActivity, "The click was ignored.", Toast.LENGTH_LONG).show();
@@ -47,11 +34,8 @@ public class CustomInAppMessageManagerListener implements IInAppMessageManagerLi
     return true;
   }
 
-  /**
-   * see {@link IInAppMessageManagerListener#onInAppMessageButtonClicked(MessageButton, InAppMessageCloser)}
-   */
   @Override
-  public boolean onInAppMessageButtonClicked(MessageButton button, InAppMessageCloser inAppMessageCloser) {
+  public boolean onInAppMessageButtonClicked(IInAppMessage inAppMessage, MessageButton button, InAppMessageCloser inAppMessageCloser) {
     Toast.makeText(mActivity, "The button click was ignored.", Toast.LENGTH_LONG).show();
 
     // Closing should not be animated if transitioning to a new activity.
@@ -60,21 +44,30 @@ public class CustomInAppMessageManagerListener implements IInAppMessageManagerLi
     return true;
   }
 
-  /**
-   * see {@link IInAppMessageManagerListener#onInAppMessageDismissed(IInAppMessage)}
-   */
   @Override
   public void onInAppMessageDismissed(IInAppMessage inAppMessage) {
     if (inAppMessage.getExtras() != null && !inAppMessage.getExtras().isEmpty()) {
       Map<String, String> extras = inAppMessage.getExtras();
-      String keyValuePairs = "Dismissed IAM with extras payload containing [";
+      StringBuilder keyValuePairs = new StringBuilder("Dismissed in-app message with extras payload containing [");
       for (String key : extras.keySet()) {
-        keyValuePairs += " '" + key + " = " + extras.get(key) + "'";
+        keyValuePairs.append(" '").append(key).append(" = ").append(extras.get(key)).append('\'');
       }
-      keyValuePairs += "]";
-      Toast.makeText(mActivity, keyValuePairs, Toast.LENGTH_LONG).show();
+      keyValuePairs.append(']');
+      Toast.makeText(mActivity, keyValuePairs.toString(), Toast.LENGTH_LONG).show();
     } else {
       Toast.makeText(mActivity, "The in-app message was dismissed.", Toast.LENGTH_LONG).show();
     }
   }
+
+  @Override
+  public void beforeInAppMessageViewOpened(View inAppMessageView, IInAppMessage inAppMessage) { }
+
+  @Override
+  public void afterInAppMessageViewOpened(View inAppMessageView, IInAppMessage inAppMessage) { }
+
+  @Override
+  public void beforeInAppMessageViewClosed(View inAppMessageView, IInAppMessage inAppMessage) { }
+
+  @Override
+  public void afterInAppMessageViewClosed(IInAppMessage inAppMessage) { }
 }

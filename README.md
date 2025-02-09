@@ -1,44 +1,53 @@
-![Appboy Logo](https://github.com/Appboy/appboy-android-sdk/blob/master/Appboy_Logo_400x100.png)
+This repository has been permanently moved to https://github.com/braze-inc/braze-android-sdk.
+
+-----
+
+
+![Braze Logo](https://github.com/Appboy/appboy-android-sdk/blob/master/braze-logo.png)
 
 # Android SDK
 
-Successful marketing automation is essential to the future of your mobile app. Appboy helps you engage your users beyond the download. Visit the following links for details and we'll have you up and running in no time!
+Successful marketing automation is essential to the future of your mobile app. Braze helps you engage your users beyond the download. Visit the following links for details and we'll have you up and running in no time!
 
-- [Appboy Academy](http://www.appboy.com/academy "Appboy Academy")
-- [Technical Documentation](http://documentation.appboy.com "Appboy Technical Documentation")
-- [JavaDocs](http://appboy.github.io/appboy-android-sdk/javadocs/ "Appboy Android SDK Class Documentation")
+- [Braze User Guide](https://www.braze.com/docs/user_guide/introduction/ "Braze User Guide")
+- [Braze Developer Guide](https://www.braze.com/docs/developer_guide/platform_integration_guides/android/initial_sdk_setup/android_sdk_integration/ "Braze Developer Guide")
+- [KDoc](https://appboy.github.io/appboy-android-sdk/kdoc/ "Braze Android SDK Class Documentation")
+- [Javadoc(old)](https://appboy.github.io/appboy-android-sdk/javadocs/ "Braze Android SDK Class Documentation"). This Javadoc is discontinued. For up-to-date documentation, please visit the Kotlin Doc (KDoc) instead.
+
+## Version Information
+
+- The Braze Android SDK supports Android 4.1+ / API 16+ (Jelly Bean and up).
+- Last Target SDK Version: 33
+- Kotlin version: `org.jetbrains.kotlin:kotlin-stdlib:1.6.0`
+- Last Compiled Firebase Cloud Messaging Version: 23.0.0
+- Braze uses [Font Awesome](https://fortawesome.github.io/Font-Awesome/) 4.3.0 for in-app message icons. Check out the [cheat sheet](http://fortawesome.github.io/Font-Awesome/cheatsheet/) to browse available icons.
 
 ## Components
 
-- `android-sdk-ui` - the Appboy SDK user interface containing the Appboy jar.
-- `droidboy` - a sample application which demonstrates how to use Appboy.
-- `hello-appboy` - a sample gradle application demonstrating a simple use case of Appboy.
-- `android-sdk-unity` - a library that enables Appboy SDK integrations on Unity.
-
-## Building and Running the Sample Applications
-
-1. Make sure the ANDROID_HOME environment variable is set to the location of your installed SDK or you have a
-   local.properties file which defines the sdk.dir property. You can check this by running `echo $ANDROID_HOME`, or
-   `echo %ANDROID_HOME%` in Windows.
-2. To assemble the UI library and the Droidboy APK, run `./gradlew assemble` (use gradlew.bat on Windows). You can find
-   assembled files in the `build/` subdirectories of the `android-sdk-ui` and `droidboy` projects. You can also
-   use the `installDebug` task if you have a device or emulator connected to adb and want to run Droidboy or Hello-Appboy.
-   You can see other available tasks by running `./gradlew tasks`.
+- `android-sdk-base` - the Braze SDK base analytics library.
+- `android-sdk-ui` - the Braze SDK user interface library for in-app messages, push, and the news feed.
+- `android-sdk-location` - the Braze SDK location library for location and geofences.
+- `droidboy` - a sample app demonstrating how to use Braze in-depth.
+- `android-sdk-unity` - a library that enables Braze SDK integrations on Unity.
+- `samples` - a folder containing several sample apps for various integration options.
 
 ## Remote repository for gradle
 The version should match the git version tag, or the most recent version noted in the changelog. An example dependency declaration is:
 
 ```
-repositories {
-   maven { url "http://appboy.github.io/appboy-android-sdk/sdk" }
-   ...
+allprojects {
+  repositories {
+    maven { url "https://appboy.github.io/appboy-android-sdk/sdk" }
+    ...
+  }
 }
 ```
 
 ```
 dependencies {
-   compile 'com.appboy:android-sdk-ui:2.0.+'
-   ...
+  implementation 'com.appboy:android-sdk-ui:24.3.+'
+  implementation 'com.appboy:android-sdk-location:24.3.+'
+  ...
 }
 ```
 
@@ -47,28 +56,19 @@ To install the UI library as an AAR file to your local maven repository, run the
 `./gradlew install`. You can reference it with groupId `com.appboy` and artifactId `android-sdk-ui`. The version should
 match the git version tag, or the most recent version noted in the changelog. An example dependency declaration is:
 
-
 ```
 repositories {
-   mavenLocal()
-   ...
+  mavenLocal()
+  ...
 }
 ```
 
 ```
 dependencies {
-  compile 'com.appboy:android-sdk-ui:2.0.+'
+  implementation 'com.appboy:android-sdk-ui:24.3.+'
 }
 ```
 
-## Version Support
-
-The Android SDK supports Android 2.3+ (Gingerbread and up).
-
-Appboy uses [Font Awesome](http://fortawesome.github.io/Font-Awesome/) 4.3.0 for in-app message icons.  Check out the [cheat sheet](http://fortawesome.github.io/Font-Awesome/cheatsheet/) to browse available icons.
-
-Appboy requires Facebook's [Fresco image library](https://github.com/facebook/fresco) to display animated `gif` images.  Fresco is not included nor enabled by default in the Appboy library, and must be included and enabled explicitly by the parent app. Appboy supports Fresco 0.6.0 through 0.9.0.
-
 ## Questions?
 
-If you have questions, please contact [support@appboy.com](mailto:support@appboy.com).
+If you have questions, please contact [support@braze.com](mailto:support@braze.com).

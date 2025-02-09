@@ -3,32 +3,34 @@ package com.appboy.sample;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.widget.ListView;
 
-import com.appboy.Constants;
-import com.appboy.enums.CardCategory;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+
+import com.braze.enums.CardCategory;
+import com.braze.support.BrazeLogger;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
+@SuppressWarnings({"PMD.FieldDeclarationsShouldBeAtStartOfClass", "deprecation"})
 public class FeedCategoriesFragment extends DialogFragment {
-  private static final String TAG = String.format("%s.%s", Constants.APPBOY_LOG_TAG_PREFIX, FeedCategoriesFragment.class.getName());
+  private static final String TAG = BrazeLogger.getBrazeLogTag(FeedCategoriesFragment.class);
   public static final String CATEGORIES_STRING = "categories";
 
-  /* The activity that creates an instance of this dialog fragment must
-     * implement this interface in order to receive event callbacks.
-     * Each method passes the DialogFragment in case the host needs to query it. */
+  /**
+   * The activity that creates an instance of this dialog fragment must
+   * implement this interface in order to receive event callbacks.
+   * Each method passes the DialogFragment in case the host needs to query it.
+   */
   public interface NoticeDialogListener {
     void onDialogPositiveClick(FeedCategoriesFragment dialog);
   }
-
-  public FeedCategoriesFragment() {}
 
   public EnumSet<CardCategory> selectedCategories;
 
@@ -38,7 +40,7 @@ public class FeedCategoriesFragment extends DialogFragment {
 
   static final String[] CATEGORIES = {"all", CardCategory.ADVERTISING.toString(), CardCategory.ANNOUNCEMENTS.toString(), CardCategory.NEWS.toString(), CardCategory.SOCIAL.toString()};
 
-  static FeedCategoriesFragment newInstance(EnumSet<CardCategory> categories) {
+  public static FeedCategoriesFragment newInstance(EnumSet<CardCategory> categories) {
     FeedCategoriesFragment categoriesFragment = new FeedCategoriesFragment();
 
     Bundle args = new Bundle();
@@ -63,6 +65,7 @@ public class FeedCategoriesFragment extends DialogFragment {
     }
   }
 
+  @NonNull
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     selectedCategories = (EnumSet<CardCategory>)getArguments().getSerializable(CATEGORIES_STRING);
@@ -76,39 +79,30 @@ public class FeedCategoriesFragment extends DialogFragment {
         // Specify the list array, the items to be selected by default (the EnumSet from DroidBoyActivity),
         // and the listener through which to receive callbacks when items are selected
         .setMultiChoiceItems(CATEGORIES, mCategoryIsChecked,
-            new DialogInterface.OnMultiChoiceClickListener() {
-              @Override
-              public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                ListView lv = ((AlertDialog)getDialog()).getListView();
-                if (which == 0) {
-                  // The "All" option is clicked, we should update all other options to be checked/unchecked.
-                  for (int i = 0; i < Arrays.asList(CATEGORIES).size(); i++) {
-                    lv.setItemChecked(i, isChecked);
-                    mCategoryIsChecked[i] = isChecked;
-                  }
-                } else if (which < Arrays.asList(CATEGORIES).size()) {
-                  mCategoryIsChecked[which] = isChecked;
-                  if (!isChecked) {
-                    // When there is an option is unchecked, we should also unchecked the "All" option
-                    lv.setItemChecked(0, false);
-                    mCategoryIsChecked[0] = false;
-                  }
+            (dialog, which, isChecked) -> {
+              ListView lv = ((AlertDialog)getDialog()).getListView();
+              if (which == 0) {
+                // The "All" option is clicked, we should update all other options to be checked/unchecked.
+                for (int i = 0; i < Arrays.asList(CATEGORIES).size(); i++) {
+                  lv.setItemChecked(i, isChecked);
+                  mCategoryIsChecked[i] = isChecked;
+                }
+              } else if (which < Arrays.asList(CATEGORIES).size()) {
+                mCategoryIsChecked[which] = isChecked;
+                if (!isChecked) {
+                  // When there is an option is unchecked, we should also unchecked the "All" option
+                  lv.setItemChecked(0, false);
+                  mCategoryIsChecked[0] = false;
                 }
               }
             }
         )
         // Set the action buttons
-        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int id) {
-            selectedCategories = getEnumSetFromBooleans(mCategoryIsChecked);
-            mListener.onDialogPositiveClick(FeedCategoriesFragment.this);
-          }
+        .setPositiveButton("OK", (dialog, id) -> {
+          selectedCategories = getEnumSetFromBooleans(mCategoryIsChecked);
+          mListener.onDialogPositiveClick(this);
         })
-        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int id) {
-          }
+        .setNegativeButton("Cancel", (dialog, id) -> {
         });
     return builder.create();
   }

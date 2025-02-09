@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<RelativeLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/com_appboy_push_tester_root"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  tools:ignore="RtlHardcoded">
   <LinearLayout
       android:id="@+id/push_testing_buttons"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
-      style="@style/Appboy.Feedback.NavigationBar">
+      style="@style/BaseWidget.PushBottomButton">
     <Button
         android:id="@+id/test_push_button"
         android:text="@string/test_push"
-        style="@style/DroidboyButton"/>
+        style="@style/BaseWidget.DroidboyButton"/>
   </LinearLayout>
   <ScrollView
       android:layout_width="match_parent"
@@ -25,12 +25,24 @@
       <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="25dp"
         android:orientation="vertical">
         <CheckBox
           android:id="@+id/push_tester_big_title"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="@string/push_tester_big_title_label"/>
+        <CheckBox
+          android:id="@+id/push_tester_inline_image_push_enabled"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/push_tester_inline_image_push"/>
+        <CheckBox
+          android:id="@+id/push_tester_conversational_push_enabled"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/conversation_push"/>
         <CheckBox
           android:id="@+id/push_tester_big_summary"
           android:layout_width="wrap_content"
@@ -66,10 +78,42 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="@string/set_open_uri_in_webview"/>
+        <CheckBox
+            android:id="@+id/push_tester_story_deep_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/story_toggle_deep_link"/>
+        <CheckBox
+            android:id="@+id/push_tester_story_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/story_toggle_title"/>
+        <CheckBox
+            android:id="@+id/push_tester_story_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/story_toggle_subtitle"/>
+        <CheckBox
+            android:id="@+id/push_tester_html"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/set_html_push_text"/>
         <Spinner
           android:id="@+id/push_image_spinner"
           android:layout_width="fill_parent"
           android:layout_height="wrap_content"/>
+        <Spinner
+            android:id="@+id/push_image_number_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+        <Spinner
+            android:id="@+id/push_story_title_align_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+        <Spinner
+            android:id="@+id/push_story_subtitle_align_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
         <Spinner
           android:id="@+id/push_priority_spinner"
           android:layout_width="fill_parent"
@@ -96,6 +140,14 @@
             android:layout_height="wrap_content"/>
         <Spinner
             android:id="@+id/push_large_icon_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+        <Spinner
+            android:id="@+id/push_notification_factory_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"/>
+        <Spinner
+            android:id="@+id/push_channel_spinner"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
       </LinearLayout>

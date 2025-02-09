@@ -1,19 +1,27 @@
 package com.appboy.sample.logging;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import com.appboy.Appboy;
-import com.appboy.models.outgoing.AppboyProperties;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.appboy.sample.R;
+import com.braze.Braze;
+import com.braze.models.outgoing.BrazeProperties;
 
 public class CustomEventDialog extends CustomLogger {
 
-  public CustomEventDialog(Context context, AttributeSet attributeSet) {
-    super(context, attributeSet, R.layout.custom_event);
+  @Nullable
+  @Override
+  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.custom_event, container, false);
   }
 
   @Override
-  protected boolean customLog(String name, AppboyProperties properties) {
-    return Appboy.getInstance(getContext()).logCustomEvent(name, properties);
+  protected void customLog(String name, BrazeProperties properties) {
+    Braze.getInstance(getContext()).logCustomEvent(name, properties);
   }
 }

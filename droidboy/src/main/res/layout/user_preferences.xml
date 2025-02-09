@@ -19,7 +19,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:textSize="10dp"
+                android:textSize="10sp"
                 android:id="@+id/user_dialog_button_clear"
                 android:textColor="@android:color/black"
                 android:text="@string/user_dialog_clear"/>
@@ -28,7 +28,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:textSize="10dp"
+                android:textSize="10sp"
                 android:id="@+id/user_dialog_button_populate"
                 android:textColor="@android:color/black"
                 android:text="@string/user_dialog_populate"/>
@@ -40,7 +40,7 @@
 
             <Button
                 android:id="@+id/first_name_button"
-                style="@style/PopulateButton"
+                style="@style/BaseWidget.PopulateButton"
                 android:text="@string/user_dialog_first_name"/>
 
             <EditText
@@ -48,7 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_span="3"
-                style="@style/UserSingleLineText"/>
+                style="@style/BaseWidget.UserSingleLineText"/>
         </TableRow>
 
         <TableRow
@@ -57,7 +57,7 @@
 
             <Button
                 android:id="@+id/last_name_button"
-                style="@style/PopulateButton"
+                style="@style/BaseWidget.PopulateButton"
                 android:text="@string/user_dialog_last_name"/>
 
             <EditText
@@ -65,7 +65,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_span="3"
-                style="@style/UserSingleLineText"/>
+                style="@style/BaseWidget.UserSingleLineText"/>
         </TableRow>
 
         <TableRow
@@ -74,7 +74,7 @@
 
             <Button
                 android:id="@+id/email_button"
-                style="@style/PopulateButton"
+                style="@style/BaseWidget.PopulateButton"
                 android:text="@string/user_dialog_email_address"/>
 
             <EditText
@@ -82,25 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_span="3"
-                style="@style/UserEmailAddress"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:id="@+id/avatar_image_url_button"
-                style="@style/PopulateButton"
-                android:text="@string/user_dialog_avatar_image_url"/>
-
-            <EditText
-                android:id="@+id/avatar_image_url"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_span="3"
-                android:singleLine="true"
-                android:inputType="textUri"/>
+                style="@style/BaseWidget.UserEmailAddress"/>
         </TableRow>
 
         <TableRow
@@ -109,7 +91,7 @@
 
             <Button
                     android:id="@+id/birthday_button"
-                    style="@style/PopulateButton"
+                    style="@style/BaseWidget.PopulateButton"
                     android:text="@string/user_dialog_birthday_button"/>
 
             <TextView
@@ -118,7 +100,7 @@
                     android:layout_height="wrap_content"
                     android:layout_span="3"/>
         </TableRow>
-        
+
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -150,6 +132,30 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/female"/>
+
+                <RadioButton
+                    android:id="@+id/other"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/other"/>
+
+                <RadioButton
+                    android:id="@+id/unknown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/unknown"/>
+
+                <RadioButton
+                    android:id="@+id/not_applicable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/not_applicable"/>
+
+                <RadioButton
+                    android:id="@+id/prefer_not_to_say"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prefer_not_to_say"/>
             </RadioGroup>
         </TableRow>
 
@@ -157,15 +163,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/user_dialog_flush"/>
+            <Button
+                android:id="@+id/language_button"
+                style="@style/BaseWidget.PopulateButton"
+                android:text="@string/user_dialog_language"/>
 
-            <CheckBox
-                android:id="@+id/user_dialog_flush_checkbox"
+            <EditText
+                android:id="@+id/language"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_span="3"
+                style="@style/BaseWidget.UserSingleLineText"/>
         </TableRow>
+      <include layout="@layout/dialog_footer_navigation" />
     </TableLayout>
 </ScrollView>

@@ -1,7 +1,7 @@
 package com.appboy.sample;
 
-import com.appboy.models.InAppMessageBase;
+import com.braze.models.inappmessage.InAppMessageModal;
 
-public class CustomInAppMessage extends InAppMessageBase {
+public class CustomInAppMessage extends InAppMessageModal {
 
 }

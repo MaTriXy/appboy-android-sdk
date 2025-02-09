@@ -2,46 +2,34 @@ package com.appboy.sample;
 
 import android.net.Uri;
 
-import com.appboy.IAppboyEndpointProvider;
-import com.appboy.support.StringUtils;
+import androidx.annotation.NonNull;
 
-import java.util.HashMap;
+import com.braze.IBrazeEndpointProvider;
 
 /**
- * An AppboyEndpointProvider that sets an override endpoint if given
+ * An {@link IBrazeEndpointProvider} that sets an override endpoint if given.
  */
-public class DroidboyEndpointProvider implements IAppboyEndpointProvider {
-  public static final String ENDPOINT_REGEX = "https.*\\.com";
-  private String mEndpoint = null;
-  private boolean mEndpointSet = false;
-  private HashMap<Uri, Uri> endpointCache;
+public class DroidboyEndpointProvider implements IBrazeEndpointProvider {
+  private final Uri mEndpointUri;
+  private final String mEndpoint;
 
-  public DroidboyEndpointProvider(String endpoint) {
-    if (!StringUtils.isNullOrBlank(endpoint)) {
-      mEndpoint = endpoint;
-      mEndpointSet = true;
-      endpointCache = new HashMap<>();
+  public DroidboyEndpointProvider(@NonNull String endpoint) {
+    mEndpoint = endpoint;
+    mEndpointUri = Uri.parse(endpoint);
+  }
+
+  public Uri getApiEndpoint(Uri brazeEndpoint) {
+    final Uri.Builder builder = brazeEndpoint.buildUpon();
+
+    if (mEndpointUri.getScheme().equals("http")) {
+      builder.scheme("http");
     }
-  }
 
-  public Uri getApiEndpoint(Uri appboyEndpoint) {
-    return getEndpoint(appboyEndpoint);
-  }
-
-  public Uri getResourceEndpoint(Uri appboyEndpoint) {
-    return getEndpoint(appboyEndpoint);
-  }
-
-  private Uri getEndpoint(Uri appboyEndpoint) {
-    if (mEndpointSet) {
-      if (endpointCache.containsKey(appboyEndpoint)) {
-        return endpointCache.get(appboyEndpoint);
-      }
-
-      Uri endpoint = Uri.parse(appboyEndpoint.toString().replaceAll(ENDPOINT_REGEX, mEndpoint));
-      endpointCache.put(appboyEndpoint, endpoint);
-      return endpoint;
+    if (mEndpointUri.getEncodedAuthority() != null) {
+      builder.encodedAuthority(mEndpointUri.getEncodedAuthority());
+    } else {
+      builder.encodedAuthority(mEndpoint);
     }
-    return appboyEndpoint;
+    return builder.build();
   }
 }

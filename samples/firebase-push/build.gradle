@@ -1,12 +1,13 @@
 apply plugin: 'com.android.application'
+apply from: rootProject.file("config/buildscript/break-compile-on-deprecations.gradle")
 
 android {
   compileSdkVersion rootProject.ext.compileSdkVersion
   buildToolsVersion rootProject.ext.buildToolsVersion
 
   defaultConfig {
-    applicationId "com.appboy.firebasepush"
-    minSdkVersion rootProject.ext.minSdkVersionForLifecycleListener
+    applicationId "com.braze.firebasepush"
+    minSdkVersion rootProject.ext.minSdkVersion
     targetSdkVersion rootProject.ext.targetSdkVersion
     versionCode 1
     versionName "1.0"
@@ -14,15 +15,21 @@ android {
   buildTypes {
     release {
       minifyEnabled true
+      signingConfig signingConfigs.debug
+      debuggable true
     }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 }
 
 dependencies {
-  compile project(':android-sdk-ui')
-  compile "com.android.support:appcompat-v7:${SUPPORT_LIBS_VERSION}"
-  compile "com.google.firebase:firebase-messaging:${PLAY_SERVICES_VERSION}"
-  compile "com.google.firebase:firebase-core:${PLAY_SERVICES_VERSION}"
+  implementation project(':android-sdk-ui')
+  implementation "androidx.appcompat:appcompat:${ANDROIDX_APPCOMPAT_VERSION}"
+  implementation "com.google.firebase:firebase-messaging:${FIREBASE_PUSH_MESSAGING_VERSION}"
 }
 
 apply plugin: 'com.google.gms.google-services'

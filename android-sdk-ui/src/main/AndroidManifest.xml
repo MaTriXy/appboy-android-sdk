@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.braze.ui">
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+  <application>
+    <activity
+      android:name="com.braze.ui.BrazeWebViewActivity"
+      android:exported="false" />
+    <activity
+      android:name=".activities.BrazeFeedActivity"
+      android:exported="false" />
+    <activity
+      android:name="com.braze.ui.activities.ContentCardsActivity"
+      android:exported="false" />
+    <activity
+      android:name="com.braze.push.NotificationTrampolineActivity"
+      android:launchMode="singleInstance"
+      android:exported="false"
+      android:theme="@style/Braze.PushTrampoline.Transparent" />
+    <receiver
+      android:name="com.braze.push.BrazePushReceiver"
+      android:exported="false" />
+  </application>
+</manifest>

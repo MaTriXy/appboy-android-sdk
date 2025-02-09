@@ -1,37 +1,38 @@
 buildscript {
   repositories {
+    mavenLocal()
+    google()
     mavenCentral()
-    jcenter()
+    maven {
+      name = 'ajoberstar-backup'
+      url = 'https://ajoberstar.org/bintray-backup/'
+    }
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.2.2'
-    classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
-    classpath 'com.google.gms:google-services:3.0.0'
+    classpath 'com.android.tools.build:gradle:7.1.0'
+    classpath 'com.google.gms:google-services:4.3.4'
+    classpath "org.ajoberstar.grgit:grgit-gradle:${AJOBERSTAR_GIT_GRADLE_PLUGIN_VERSION}"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${KOTLIN_VERSION}"
   }
 }
 
 ext {
-  compileSdkVersion = 24
-  buildToolsVersion = '24.0.0'
-  minSdkVersion = 9
-  targetSdkVersion = 24
-  appVersionName = project.version
-  minSdkVersionForLifecycleListener = 14
+  compileSdkVersion = 33
+  buildToolsVersion = '33.0.0'
+  minSdkVersion = 16
+  targetSdkVersion = 33
+  appVersionName = '24.3.0'
 }
 
 subprojects {
   repositories {
+    maven { url "https://appboy.github.io/appboy-android-sdk/sdk" }
     mavenLocal()
+    google()
     mavenCentral()
-    maven { url "http://appboy.github.io/appboy-android-sdk/sdk" }
   }
 
   group = 'com.appboy'
-  version = '2.0.3'
-}
-
-// Run 'gradle wrapper' to generate all of the wrapper files if you change this.
-task wrapper(type: Wrapper) {
-  gradleVersion = '2.14.1'
+  version = '24.3.0'
 }

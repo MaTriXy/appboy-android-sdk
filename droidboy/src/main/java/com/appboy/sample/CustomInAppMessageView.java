@@ -9,9 +9,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.appboy.ui.inappmessage.IInAppMessageView;
-import com.appboy.ui.inappmessage.views.InAppMessageViewUtils;
-import com.appboy.ui.support.ViewUtils;
+import androidx.annotation.NonNull;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.braze.ui.inappmessage.utils.InAppMessageViewUtils;
+import com.braze.ui.inappmessage.views.IInAppMessageView;
+import com.braze.ui.support.ViewUtils;
 
 public class CustomInAppMessageView extends RelativeLayout implements IInAppMessageView {
 
@@ -21,7 +24,7 @@ public class CustomInAppMessageView extends RelativeLayout implements IInAppMess
 
   public void setMessageBackgroundColor(int color) {
     LayerDrawable layerDrawable = (LayerDrawable) findViewById(R.id.inappmessage).getBackground();
-    InAppMessageViewUtils.setDrawableColor(layerDrawable.findDrawableByLayerId(R.id.inappmessage_background), color, getContext().getResources().getColor(R.color.custom_inappmessage_green));
+    InAppMessageViewUtils.setDrawableColor(layerDrawable.findDrawableByLayerId(R.id.inappmessage_background), color);
   }
 
   public void setMessageTextColor(int color) {
@@ -53,16 +56,30 @@ public class CustomInAppMessageView extends RelativeLayout implements IInAppMess
     return this;
   }
 
+  @Override
+  public void applyWindowInsets(@NonNull WindowInsetsCompat insets) {
+    // Does nothing
+  }
+
   public TextView getMessageTextView() {
-    return (TextView) findViewById(R.id.inappmessage_message);
+    return findViewById(R.id.inappmessage_message);
   }
 
   public ImageView getMessageImageView() {
-    return (ImageView) findViewById(R.id.inappmessage_image);
+    return findViewById(R.id.inappmessage_image);
   }
 
   public TextView getMessageIconView() {
-    return (TextView) findViewById(R.id.inappmessage_icon);
+    return findViewById(R.id.inappmessage_icon);
   }
 
+  @Override
+  public boolean getHasAppliedWindowInsets() {
+    return false;
+  }
+
+  @Override
+  public void setHasAppliedWindowInsets(boolean hasAppliedWindowInsets) {
+
+  }
 }

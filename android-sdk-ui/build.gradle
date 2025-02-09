@@ -1,36 +1,38 @@
 apply plugin: 'com.android.library'
-apply plugin: 'android-maven'
+apply plugin: 'kotlin-android'
 
 dependencies {
-  compile 'com.appboy:android-sdk-base:2.0.+'
-  compile 'com.android.support:support-v4:23.0.1'
-  provided ("com.facebook.fresco:fresco:0.9.0") {
-    exclude group: 'com.android.support', module: 'support-v4'
-  }
+  api "com.appboy:android-sdk-base:${BRAZE_SDK_VERSION}"
+  compileOnly "com.google.android.material:material:${GOOGLE_MATERIAL_VERSION}"
+
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${KOTLIN_COROUTINES_VERSION}"
+  implementation "androidx.core:core:${ANDROIDX_CORE_VERSION}"
+  implementation "androidx.fragment:fragment:${ANDROIDX_FRAGMENT_VERSION}"
+  implementation "androidx.recyclerview:recyclerview:${ANDROIDX_RECYCLERVIEW_VERSION}"
+  implementation "androidx.swiperefreshlayout:swiperefreshlayout:${ANDROIDX_SWIPE_REFRESH_LAYOUT_VERSION}"
+  implementation "androidx.webkit:webkit:${ANDROIDX_WEBKIT_VERSION}"
+
+  // Required for the FirebaseMessagingService
+  compileOnly "com.google.firebase:firebase-messaging:${FIREBASE_PUSH_MESSAGING_VERSION}"
 }
 
 android {
-  compileSdkVersion 24
-  buildToolsVersion '24.0.0'
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.buildToolsVersion
 
   defaultConfig {
-    minSdkVersion 9
-    targetSdkVersion 24
-    consumerProguardFiles 'appboy-proguard-rules.pro'
+    minSdkVersion rootProject.ext.minSdkVersion
+    targetSdkVersion rootProject.ext.targetSdkVersion
+    consumerProguardFiles 'braze-consumer-proguard-rules.pro'
   }
 
-  sourceSets {
-    main.setRoot(".")
-    // Note: We'll be moving this project to the new Android Build System conventional folder structure in a future
-    // release.
-    main {
-      manifest.srcFile 'AndroidManifest.xml'
-      java.srcDirs = ['src']
-      resources.srcDirs = ['src']
-      aidl.srcDirs = ['src']
-      renderscript.srcDirs = ['src']
-      res.srcDirs = ['res']
-      assets.srcDirs = ['assets']
-    }
+  kotlinOptions {
+    freeCompilerArgs = ['-Xjvm-default=all']
+    jvmTarget = "1.8"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 }
